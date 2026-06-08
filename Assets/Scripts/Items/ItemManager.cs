@@ -5,22 +5,44 @@ public class ItemManager : MonoBehaviour
 {
     [SerializeField] private Transform rightHandSlot;
     [SerializeField] private float pickupRange = 2f;
+    [SerializeField] private SanitySystem sanitySystem;
 
     private FlashlightItem equippedFlashlight;
-    private List<FlashlightItem> nearbyItems = new List<FlashlightItem>();
+    private AlmondWaterItem equippedAlmondWater;
+    private List<FlashlightItem> nearbyFlashlights = new List<FlashlightItem>();
+    private List<AlmondWaterItem> nearbyAlmondWaters = new List<AlmondWaterItem>();
+
+    private void Start()
+    {
+        if (sanitySystem == null)
+            sanitySystem = GetComponent<SanitySystem>();
+    }
 
     private void Update()
     {
-        // Check for pickups
+        // Pickup/Drop with E
         if (Input.GetKeyDown(KeyCode.E))
         {
             if (equippedFlashlight != null)
             {
-                DropItem();
+                DropFlashlight();
             }
-            else if (nearbyItems.Count > 0)
+            else if (nearbyFlashlights.Count > 0)
             {
-                PickupItem(nearbyItems[0]);
+                PickupFlashlight(nearbyFlashlights[0]);
+            }
+        }
+
+        // Consume Almond Water with F
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            if (equippedAlmondWater != null)
+            {
+                ConsumeAlmondWater();
+            }
+            else if (nearbyAlmondWaters.Count > 0)
+            {
+                PickupAlmondWater(nearbyAlmondWaters[0]);
             }
         }
     }
@@ -30,7 +52,13 @@ public class ItemManager : MonoBehaviour
         FlashlightItem flashlight = collision.GetComponent<FlashlightItem>();
         if (flashlight != null && !flashlight.IsEquipped())
         {
-            nearbyItems.Add(flashlight);
+            nearbyFlashlights.Add(flashlight);
+        }
+
+        AlmondWaterItem almondWater = collision.GetComponent<AlmondWaterItem>();
+        if (almondWater != null)
+        {
+            nearbyAlmondWaters.Add(almondWater);
         }
     }
 
@@ -39,23 +67,29 @@ public class ItemManager : MonoBehaviour
         FlashlightItem flashlight = collision.GetComponent<FlashlightItem>();
         if (flashlight != null)
         {
-            nearbyItems.Remove(flashlight);
+            nearbyFlashlights.Remove(flashlight);
+        }
+
+        AlmondWaterItem almondWater = collision.GetComponent<AlmondWaterItem>();
+        if (almondWater != null)
+        {
+            nearbyAlmondWaters.Remove(almondWater);
         }
     }
 
-    public void PickupItem(FlashlightItem flashlight)
+    public void PickupFlashlight(FlashlightItem flashlight)
     {
         if (equippedFlashlight != null)
         {
-            DropItem();
+            DropFlashlight();
         }
 
         equippedFlashlight = flashlight;
         equippedFlashlight.Equip(rightHandSlot);
-        nearbyItems.Remove(flashlight);
+        nearbyFlashlights.Remove(flashlight);
     }
 
-    public void DropItem()
+    public void DropFlashlight()
     {
         if (equippedFlashlight != null)
         {
@@ -65,6 +99,23 @@ public class ItemManager : MonoBehaviour
         }
     }
 
+    public void PickupAlmondWater(AlmondWaterItem almondWater)
+    {
+        equippedAlmondWater = almondWater;
+        almondWater.transform.SetParent(rightHandSlot);
+        almondWater.transform.localPosition = new Vector3(0, -0.15f, 0.1f);
+        nearbyAlmondWaters.Remove(almondWater);
+    }
+
+    public void ConsumeAlmondWater()
+    {
+        if (equippedAlmondWater != null)
+        {
+            equippedAlmondWater.Consume(sanitySystem);
+            equippedAlmondWater = null;
+        }
+    }
+
     public FlashlightItem GetEquippedFlashlight() => equippedFlashlight;
-    public List<FlashlightItem> GetNearbyItems() => nearbyItems;
+    public AlmondWaterItem GetEquippedAlmondWater() => equippedAlmondWater;
 }
