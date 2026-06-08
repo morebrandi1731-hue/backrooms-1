@@ -4,6 +4,10 @@ public class HazmatModel : MonoBehaviour
 {
     [SerializeField] private Transform bodyTransform;
     [SerializeField] private Material hazmatMaterial;
+    [SerializeField] private Material metalMaterial;
+    [SerializeField] private Material glassMaterial;
+
+    private Transform rightHandTransform;
 
     private void Start()
     {
@@ -49,6 +53,20 @@ public class HazmatModel : MonoBehaviour
         stripeMat.color = new Color(1f, 0.9f, 0f); // Bright yellow
         stripe1.GetComponent<MeshRenderer>().material = stripeMat;
         stripe1.transform.SetParent(transform);
+
+        // Create right hand (where flashlight will be held)
+        GameObject rightHand = new GameObject("RightHand");
+        rightHand.transform.SetParent(transform);
+        rightHand.transform.localPosition = new Vector3(0.4f, 0.35f, 0.1f);
+        rightHandTransform = rightHand.transform;
+
+        // Attach flashlight to right hand
+        GameObject flashlightGO = new GameObject("Flashlight");
+        flashlightGO.transform.SetParent(rightHandTransform);
+        flashlightGO.transform.localPosition = new Vector3(0, -0.1f, 0.15f); // Position in hand
+        flashlightGO.transform.localRotation = Quaternion.Euler(-15f, 0, 0); // Angle down slightly
+
+        FlashlightModel flashlight = flashlightGO.AddComponent<FlashlightModel>();
     }
 
     private GameObject CreateCapsule(string name, Vector3 position, Vector3 scale)
@@ -61,7 +79,6 @@ public class HazmatModel : MonoBehaviour
         MeshFilter filter = obj.AddComponent<MeshFilter>();
         BoxCollider collider = obj.AddComponent<BoxCollider>();
 
-        // Create simple capsule mesh (approximated as elongated cube)
         Mesh mesh = CreateCapsuleMesh(1, 1);
         filter.mesh = mesh;
         renderer.material = hazmatMaterial != null ? hazmatMaterial : new Material(Shader.Find("Standard"));
@@ -106,7 +123,6 @@ public class HazmatModel : MonoBehaviour
     private Mesh CreateCapsuleMesh(float height, float radius)
     {
         Mesh mesh = new Mesh();
-        // Simplified capsule - elongated box
         Vector3[] vertices = new Vector3[8]
         {
             new Vector3(-radius, -height/2, -radius),
@@ -135,7 +151,6 @@ public class HazmatModel : MonoBehaviour
     private Mesh CreateSphereMesh()
     {
         Mesh mesh = new Mesh();
-        // Simplified sphere using icosahedron approximation
         float t = (1f + Mathf.Sqrt(5f)) / 2f;
         
         Vector3[] vertices = new Vector3[12]
