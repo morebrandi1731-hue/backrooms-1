@@ -6,6 +6,7 @@ public class HallucinationController : MonoBehaviour
     [SerializeField] private Camera mainCamera;
     [SerializeField] private float maxDistortion = 0.05f;
     [SerializeField] private float maxColorShift = 0.3f;
+    [SerializeField] private float maxScreenShake = 0.15f;
 
     [Header("Audio Effects")]
     [SerializeField] private AudioSource audioSource;
@@ -16,13 +17,14 @@ public class HallucinationController : MonoBehaviour
     private float hallucinationIntensity = 0f;
     private float screenShakeAmount = 0f;
     private Material screenEffectMaterial;
+    private Vector3 originalCameraPos;
 
     private void Start()
     {
         if (mainCamera == null)
             mainCamera = Camera.main;
 
-        // Create screen effect material
+        originalCameraPos = mainCamera.transform.localPosition;
         screenEffectMaterial = new Material(Shader.Find("Standard"));
     }
 
@@ -32,6 +34,12 @@ public class HallucinationController : MonoBehaviour
         {
             UpdateVisualEffects();
             UpdateAudioEffects();
+        }
+        else
+        {
+            // Reset camera position
+            if (mainCamera != null)
+                mainCamera.transform.localPosition = originalCameraPos;
         }
     }
 
@@ -57,18 +65,19 @@ public class HallucinationController : MonoBehaviour
     {
         if (mainCamera == null) return;
 
-        // Screen shake
-        screenShakeAmount = Mathf.Sin(Time.time * 5f) * hallucinationIntensity * 0.1f;
-        mainCamera.transform.localPosition += new Vector3(
+        // Screen shake - scales with sanity loss
+        screenShakeAmount = Mathf.Sin(Time.time * 8f) * hallucinationIntensity * maxScreenShake;
+        Vector3 shakeOffset = new Vector3(
             Random.Range(-screenShakeAmount, screenShakeAmount),
             Random.Range(-screenShakeAmount, screenShakeAmount),
             0
         );
+        mainCamera.transform.localPosition = originalCameraPos + shakeOffset;
 
-        // Color distortion (subtle)
+        // Color distortion
         mainCamera.backgroundColor = Color.Lerp(
             new Color(0.3f, 0.3f, 0.25f),
-            new Color(0.2f, 0.2f, 0.15f),
+            new Color(0.15f, 0.1f, 0.05f),
             hallucinationIntensity
         );
     }

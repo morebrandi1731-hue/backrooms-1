@@ -6,6 +6,7 @@ public class ItemManager : MonoBehaviour
     [SerializeField] private Transform rightHandSlot;
     [SerializeField] private float pickupRange = 2f;
     [SerializeField] private SanitySystem sanitySystem;
+    [SerializeField] private MobileInputHandler mobileInputHandler;
 
     private FlashlightItem equippedFlashlight;
     private AlmondWaterItem equippedAlmondWater;
@@ -16,12 +17,14 @@ public class ItemManager : MonoBehaviour
     {
         if (sanitySystem == null)
             sanitySystem = GetComponent<SanitySystem>();
+        if (mobileInputHandler == null)
+            mobileInputHandler = GetComponent<MobileInputHandler>();
     }
 
     private void Update()
     {
-        // Pickup/Drop with E
-        if (Input.GetKeyDown(KeyCode.E))
+        // Pickup/Drop with E or mobile button
+        if (Input.GetKeyDown(KeyCode.E) || mobileInputHandler.IsPickupPressed())
         {
             if (equippedFlashlight != null)
             {
@@ -33,8 +36,8 @@ public class ItemManager : MonoBehaviour
             }
         }
 
-        // Consume Almond Water with F
-        if (Input.GetKeyDown(KeyCode.F))
+        // Consume Almond Water with F or mobile button
+        if (Input.GetKeyDown(KeyCode.F) || mobileInputHandler.IsConsumePressed())
         {
             if (equippedAlmondWater != null)
             {
@@ -43,6 +46,15 @@ public class ItemManager : MonoBehaviour
             else if (nearbyAlmondWaters.Count > 0)
             {
                 PickupAlmondWater(nearbyAlmondWaters[0]);
+            }
+        }
+
+        // Toggle flashlight with Spacebar or mobile button
+        if (Input.GetKeyDown(KeyCode.Space) || mobileInputHandler.IsToggleFlashlightPressed())
+        {
+            if (equippedFlashlight != null && equippedFlashlight.IsEquipped())
+            {
+                equippedFlashlight.ToggleFlashlight();
             }
         }
     }
