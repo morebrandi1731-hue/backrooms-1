@@ -17,6 +17,9 @@ public class MobileInputHandler : MonoBehaviour
     [SerializeField] private UnityEngine.UI.Button toggleFlashlightButton;
     [SerializeField] private UnityEngine.UI.Button sprintButton;
 
+    [Header("Desktop Settings")]
+    [SerializeField] private float desktopMouseSensitivity = 2f;
+
     private Vector2 movementInput = Vector2.zero;
     private Vector2 lookInput = Vector2.zero;
     private Vector2 leftJoystickStartPos;
@@ -28,33 +31,95 @@ public class MobileInputHandler : MonoBehaviour
 
     private int leftJoystickFingerId = -1;
     private int rightTouchFingerId = -1;
+    private bool isDesktop = false;
 
     private void Start()
     {
-        // Setup button listeners
-        if (pickupButton != null)
+        #if UNITY_IOS || UNITY_ANDROID
+        isDesktop = false;
+        #else
+        isDesktop = true;
+        #endif
+
+        if (!isDesktop)
         {
-            pickupButton.onClick.AddListener(() => isPickupPressed = true);
-        }
-        if (consumeButton != null)
-        {
-            consumeButton.onClick.AddListener(() => isConsumePressed = true);
-        }
-        if (toggleFlashlightButton != null)
-        {
-            toggleFlashlightButton.onClick.AddListener(() => isToggleFlashlightPressed = true);
-        }
-        if (sprintButton != null)
-        {
-            sprintButton.onPointerDown.AddListener(x => isSprinting = true);
-            sprintButton.onPointerUp.AddListener(x => isSprinting = false);
+            // Setup button listeners for mobile
+            if (pickupButton != null)
+            {
+                pickupButton.onClick.AddListener(() => isPickupPressed = true);
+            }
+            if (consumeButton != null)
+            {
+                consumeButton.onClick.AddListener(() => isConsumePressed = true);
+            }
+            if (toggleFlashlightButton != null)
+            {
+                toggleFlashlightButton.onClick.AddListener(() => isToggleFlashlightPressed = true);
+            }
+            if (sprintButton != null)
+            {
+                sprintButton.onPointerDown.AddListener(x => isSprinting = true);
+                sprintButton.onPointerUp.AddListener(x => isSprinting = false);
+            }
         }
     }
 
     private void Update()
     {
-        HandleTouchInput();
+        if (isDesktop)
+        {
+            HandleDesktopInput();
+        }
+        else
+        {
+            HandleTouchInput();
+        }
         ResetFrameInputs();
+    }
+
+    private void HandleDesktopInput()
+    {
+        // WASD movement
+        movementInput = new Vector2(
+            Input.GetAxis("Horizontal"),
+            Input.GetAxis("Vertical")
+        );
+
+        // Mouse look
+        if (Cursor.lockState == CursorLockMode.Locked)
+        {
+            lookInput = new Vector2(
+                Input.GetAxis("Mouse X"),
+                Input.GetAxis("Mouse Y")
+            ) * desktopMouseSensitivity;
+        }
+
+        // Sprint with Left Shift
+        isSprinting = Input.GetKey(KeyCode.LeftShift);
+
+        // Pickup with E
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            isPickupPressed = true;
+        }
+
+        // Consume with F
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            isConsumePressed = true;
+        }
+
+        // Toggle flashlight with Spacebar
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            isToggleFlashlightPressed = true;
+        }
+
+        // Toggle cursor lock with Escape
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Cursor.lockState = Cursor.lockState == CursorLockMode.Locked ? CursorLockMode.None : CursorLockMode.Locked;
+        }
     }
 
     private void HandleTouchInput()
@@ -77,10 +142,6 @@ public class MobileInputHandler : MonoBehaviour
                 HandleTouchUp(touch);
             }
         }
-
-        #if UNITY_EDITOR
-        HandleDesktopInput();
-        #endif
     }
 
     private void HandleTouchDown(Touch touch)
@@ -145,27 +206,8 @@ public class MobileInputHandler : MonoBehaviour
         }
     }
 
-    private void HandleDesktopInput()
-    {
-        // WASD movement
-        movementInput = new Vector2(
-            Input.GetAxis("Horizontal"),
-            Input.GetAxis("Vertical")
-        );
-
-        // Mouse look
-        lookInput = new Vector2(
-            Input.GetAxis("Mouse X"),
-            Input.GetAxis("Mouse Y")
-        );
-
-        // Sprint
-        isSprinting = Input.GetKey(KeyCode.LeftShift);
-    }
-
     private void ResetFrameInputs()
     {
-        lookInput = Vector2.zero; // Reset every frame as it's handled via delta
         isPickupPressed = false;
         isConsumePressed = false;
         isToggleFlashlightPressed = false;
@@ -178,4 +220,5 @@ public class MobileInputHandler : MonoBehaviour
     public bool IsPickupPressed() => isPickupPressed;
     public bool IsConsumePressed() => isConsumePressed;
     public bool IsToggleFlashlightPressed() => isToggleFlashlightPressed;
+    public bool IsDesktop() => isDesktop;
 }
