@@ -15,6 +15,10 @@ public class PlayerController : MonoBehaviour
     [Header("Mobile Input")]
     [SerializeField] private MobileInputHandler inputHandler;
 
+    [Header("Equipment")]
+    [SerializeField] private HazmatModel hazmatModel;
+    [SerializeField] private ItemManager itemManager;
+
     private Vector3 moveDirection = Vector3.zero;
     private float currentSpeed;
     private float cameraYaw = 0f;
@@ -25,6 +29,8 @@ public class PlayerController : MonoBehaviour
         if (rb == null) rb = GetComponent<Rigidbody>();
         if (mainCamera == null) mainCamera = Camera.main;
         if (inputHandler == null) inputHandler = GetComponent<MobileInputHandler>();
+        if (hazmatModel == null) hazmatModel = GetComponent<HazmatModel>();
+        if (itemManager == null) itemManager = GetComponent<ItemManager>();
 
         // Lock cursor on desktop
         #if !UNITY_IOS && !UNITY_ANDROID

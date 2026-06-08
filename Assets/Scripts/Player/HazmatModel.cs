@@ -2,12 +2,11 @@ using UnityEngine;
 
 public class HazmatModel : MonoBehaviour
 {
-    [SerializeField] private Transform bodyTransform;
     [SerializeField] private Material hazmatMaterial;
     [SerializeField] private Material metalMaterial;
     [SerializeField] private Material glassMaterial;
 
-    private Transform rightHandTransform;
+    private Transform rightHandSlot;
 
     private void Start()
     {
@@ -54,19 +53,11 @@ public class HazmatModel : MonoBehaviour
         stripe1.GetComponent<MeshRenderer>().material = stripeMat;
         stripe1.transform.SetParent(transform);
 
-        // Create right hand (where flashlight will be held)
-        GameObject rightHand = new GameObject("RightHand");
+        // Create right hand slot (where items can be equipped)
+        GameObject rightHand = new GameObject("RightHandSlot");
         rightHand.transform.SetParent(transform);
         rightHand.transform.localPosition = new Vector3(0.4f, 0.35f, 0.1f);
-        rightHandTransform = rightHand.transform;
-
-        // Attach flashlight to right hand
-        GameObject flashlightGO = new GameObject("Flashlight");
-        flashlightGO.transform.SetParent(rightHandTransform);
-        flashlightGO.transform.localPosition = new Vector3(0, -0.1f, 0.15f); // Position in hand
-        flashlightGO.transform.localRotation = Quaternion.Euler(-15f, 0, 0); // Angle down slightly
-
-        FlashlightModel flashlight = flashlightGO.AddComponent<FlashlightModel>();
+        rightHandSlot = rightHand.transform;
     }
 
     private GameObject CreateCapsule(string name, Vector3 position, Vector3 scale)
@@ -211,4 +202,6 @@ public class HazmatModel : MonoBehaviour
         mesh.RecalculateNormals();
         return mesh;
     }
+
+    public Transform GetRightHandSlot() => rightHandSlot;
 }
